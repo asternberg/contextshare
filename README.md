@@ -27,21 +27,23 @@ Works with any agent that can run shell commands, such as Claude Code.
 
 > Read https://github.com/asternberg/contextshare and share my meetings for next week with Dana.
 
-Your agent replies with a link and a message to send to Dana.
+Your agent replies with a short message to send to Dana. It contains the link.
 
-**To receive,** paste the link to your agent with your question. Nothing else is needed:
+**To receive,** paste that message to your agent and ask your question:
 
-> https://…/#ro.…
-> What does Assaf have on Tuesday?
+> Run `npx -y github:asternberg/contextshare open 'https://…/#ro.…'` and use what it prints to
+> answer my questions. What does Assaf have on Tuesday?
+
+Pasting only the link also works. Your agent will find the command on the linked page and ask
+before running it.
 
 **To update what you shared:**
 
 > Update what I shared with Dana: add the Thursday lunch.
 
-**To pick up changes,** paste the same link again:
+**To pick up changes,** paste the same message again, or just ask:
 
-> https://…/#ro.…
-> Did anything change?
+> Check contextshare again. Did anything change?
 
 The link stays the same throughout.
 

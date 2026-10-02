@@ -20,7 +20,7 @@ Set up
   contextshare new <name> [--relay <url>]   create a space and print its share links
   contextshare open <link | ->              received a link? save it and print what is in it, in one step
   contextshare join <name> <link | ->       save a link under a name you choose (- reads the link from stdin)
-  contextshare link [--ro]                  print the share link (--ro: a read-only link)
+  contextshare link [--ro] [--message]      print the share link (--ro: read-only; --message: the ready-to-send message)
   contextshare spaces                       list configured spaces
   contextshare as <your-name>               set the author name written with your updates
   contextshare rotate                       move everything to a fresh link and empty the old space
@@ -49,7 +49,7 @@ Environment
   CONTEXTSHARE_CONFIG  config file path (default ~/.config/contextshare/config.json)
 `;
 
-const BOOLEAN = new Set(['json', 'ro', 'all', 'help', 'new', 'skill']);
+const BOOLEAN = new Set(['json', 'ro', 'all', 'help', 'new', 'skill', 'message']);
 
 function parseArgs(argv) {
   const flags = {}, rest = [];
@@ -87,6 +87,13 @@ function readValue(arg) {
 }
 
 const print = (obj) => console.log(JSON.stringify(obj, null, 2));
+
+// What the sender forwards. The recipient pastes it to their agent unchanged: because the command
+// is in their own message, their agent does not have to trust instructions found on a web page.
+const shareMessage = (link) =>
+  `I shared something with you through contextshare. Paste this whole message to your AI agent: ` +
+  `Run \`npx -y github:asternberg/contextshare open '${link}'\` and use what it prints to answer my questions. ` +
+  `(No agent? Open ${link} in a web browser.)`;
 
 // Everything in a space, plus what changed since this machine last pulled it.
 async function pull(name, space, onlyNew) {
@@ -192,9 +199,10 @@ async function main() {
       cfg.spaces[name] = link;
       saveConfig(cfg);
       console.log(`Created space "${name}" as ${author(cfg)}.\n`);
-      console.log(`Read-only link. Give this to people who should only read. They can hand it to their AI agent or open it in a browser:\n${space.readOnlyLink}\n`);
+      console.log(`Read-only link. Give this to people who should only read:\n${space.readOnlyLink}\n`);
       console.log(`Read-write link. Give this only to people who should also add and change things:\n${link}\n`);
-      console.log('Send links over a private channel. Anyone holding one can read everything in this space.');
+      console.log(`Message to send with the read-only link. The other person pastes it to their AI agent as it is:\n${shareMessage(space.readOnlyLink)}\n`);
+      console.log('Send it over a private channel. Anyone holding a link can read everything in this space.');
       return;
     }
     case 'join': {
@@ -240,7 +248,8 @@ async function main() {
     }
     case 'link': {
       const { space, link } = await openSpace(flags.space);
-      console.log(flags.ro ? space.readOnlyLink : link);
+      const chosen = flags.ro ? space.readOnlyLink : link;
+      console.log(flags.message ? shareMessage(chosen) : chosen);
       return;
     }
     case 'ls': {

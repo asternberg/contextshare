@@ -378,6 +378,11 @@ test('CLI: the demo flow. Share by link, consume, update, and pick up the change
   const onlyNew = JSON.parse(await cli('receiver', ['pull', '--new']));
   assert.deepEqual(onlyNew.records, []);
 
+  // The sender gets a ready-to-send message that carries the command and the read-only link.
+  assert.ok(made.includes(`npx -y github:asternberg/contextshare open '${roLink}'`), 'new prints the message');
+  const message = (await cli('sender', ['link', '--ro', '--message'])).trim();
+  assert.ok(message.includes(`open '${roLink}'`) && !message.includes('#rw.'), 'the message never carries the read-write link');
+
   // A second person is handed only the link: `open` saves it under the space's own name and loads it.
   const opened = JSON.parse(await cli('walkin', ['open', roLink]));
   assert.equal(opened.saved_as, 'dana-meetings');

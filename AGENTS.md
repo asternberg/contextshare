@@ -37,10 +37,11 @@ this guide. Offer it once at the end of your reply.
    `text` field. Run each `cs` command on its own, not chained with other commands.
 
 3. Reply to the person with:
-   - the **read-only link**, unless they said the other person should also be able to add or
-     change things, in which case give the read-write link;
-   - what the other person does with it: paste the link to their AI agent, or open it in a web
-     browser. In the browser, the "Copy for my AI" button copies the content for any AI chat;
+   - the **message to send**, exactly as `cs new` printed it (or `cs link --ro --message -s <name>`
+     to print it again). The other person pastes that message to their AI agent unchanged. It
+     carries the command, so their agent can act on it directly;
+   - the read-only link by itself as well, for opening in a web browser. Give the read-write link
+     instead only if they said the other person should be able to add or change things;
    - a note that anyone holding the link can read everything in the space, so it should be sent
      privately.
 
@@ -106,7 +107,7 @@ Notes on a person or company, key `prospect/<domain>` or `notes/<topic>`: a flat
     cs open '<link>'                 received a link: save it and print what is in it
     cs join <name> '<link>'          save a link under a name you choose, without printing content
     cs spaces                        list saved spaces
-    cs link [--ro] -s <name>         print a space's link again
+    cs link [--ro] [--message]       print a space's link again, or the ready-to-send message
     cs pull [-s <name>] [--new]      everything in the space, plus what changed since last pull
     cs ls [-s <name>] [--since 3d]   keys with last-updated time and author, no values
     cs get <key> [-s <name>]         one record
