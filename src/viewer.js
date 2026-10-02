@@ -94,7 +94,7 @@ export async function loadRecords(relay, fragment, fetchFn = fetch) {
       const pt = await subtle.decrypt({ name: 'AES-GCM', iv: raw.slice(0, 12), additionalData: te.encode('contextshare/v1|' + sp.space + '|' + r.id) }, sp.key, raw.slice(12));
       const env = JSON.parse(td.decode(pt));
       if (env.del) continue;
-      out.push({ key: env.k, value: env.v, updated_by: env.by || null, updated_at: env.carried ? env.at : r.updated_at, seq: r.seq });
+      out.push({ key: env.k, value: env.v, updated_by: env.by || null, note: typeof env.n === 'string' ? env.n : '', updated_at: env.carried ? env.at : r.updated_at, seq: r.seq });
     } catch { out.push({ key: '(could not decrypt)', value: null, updated_by: null, updated_at: r.updated_at, seq: r.seq }); }
   }
   return out.sort((x, y) => y.seq - x.seq);
@@ -135,7 +135,7 @@ if (typeof document !== 'undefined') {
         (location.hash.startsWith('#ro.') ? 'This link is read-only.' : 'This link can also write. Keep it private.');
       for (const r of shown) {
         const card = el('div', undefined, 'card');
-        card.append(el('h2', r.key), el('div', 'Updated ' + new Date(r.updated_at).toLocaleString() + (r.updated_by ? ' by ' + r.updated_by : ''), 'muted'), render(r.value));
+        card.append(el('h2', r.key), el('div', 'Updated ' + new Date(r.updated_at).toLocaleString() + (r.updated_by ? ' by ' + r.updated_by : '') + (r.note ? ': ' + r.note : ''), 'muted'), render(r.value));
         box.append(card);
       }
       if (!shown.length) box.append(el('div', 'Nothing has been shared here yet.', 'card'));

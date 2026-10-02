@@ -32,6 +32,7 @@ Records
   contextshare put <key> <json | @file | ->
   contextshare patch <key> <json | @file | ->     merge fields into a record (null removes a field)
   contextshare rm <key>
+  Add --note "<what changed>" to put, patch or rm; readers see it next to the record.
 
 Run
   contextshare mcp                          MCP server over stdio, for any agent
@@ -128,7 +129,7 @@ async function main() {
       const last = state[space.id] || 0;
       const { seq, records } = await space.changes(0);
       const readable = records.filter((r) => !r.error && r.key !== '_space');
-      const meta = (r) => ({ key: r.key, updated_at: r.updated_at, updated_by: r.updated_by });
+      const meta = (r) => ({ key: r.key, updated_at: r.updated_at, updated_by: r.updated_by, ...(r.note ? { note: r.note } : {}) });
       const changed = readable.filter((r) => r.seq > last).sort((a, b) => b.seq - a.seq)
         .map((r) => ({ ...meta(r), change: r.deleted ? 'deleted' : 'new or updated' }));
       const live = readable.filter((r) => !r.deleted && (!flags.new || r.seq > last)).sort((a, b) => b.seq - a.seq);
@@ -216,7 +217,7 @@ async function main() {
       const width = Math.max(...records.map((r) => (r.key || r.id).length));
       for (const r of records) {
         const label = r.error ? `${r.id}  [${r.error}]` : r.key.padEnd(width);
-        console.log(`${label}  ${r.updated_at}  ${r.updated_by ?? ''}${r.deleted ? '  (deleted)' : ''}`);
+        console.log(`${label}  ${r.updated_at}  ${r.updated_by ?? ''}${r.deleted ? '  (deleted)' : ''}${r.note ? `  "${r.note}"` : ''}`);
       }
       return;
     }
@@ -230,17 +231,17 @@ async function main() {
     }
     case 'put': {
       const { space } = await openSpace(flags.space);
-      print(await space.put(need(a, 'a key'), readValue(b), { ifSeq: flags['if-seq'] !== undefined ? Number(flags['if-seq']) : undefined }));
+      print(await space.put(need(a, 'a key'), readValue(b), { ifSeq: flags['if-seq'] !== undefined ? Number(flags['if-seq']) : undefined, note: flags.note }));
       return;
     }
     case 'patch': {
       const { space } = await openSpace(flags.space);
-      print(await space.patch(need(a, 'a key'), readValue(b)));
+      print(await space.patch(need(a, 'a key'), readValue(b), { note: flags.note }));
       return;
     }
     case 'rm': {
       const { space } = await openSpace(flags.space);
-      print({ deleted: true, ...(await space.delete(need(a, 'a key'))) });
+      print({ deleted: true, ...(await space.delete(need(a, 'a key'), { note: flags.note })) });
       return;
     }
     case 'rotate': {

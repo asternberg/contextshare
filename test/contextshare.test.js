@@ -350,7 +350,7 @@ test('CLI: the demo flow. Share by link, consume, update, and pick up the change
   await cli('sender', ['put', 'calendar/next-week', '-'], JSON.stringify({ events: [
     { title: 'Pricing review', start: '2026-10-06T10:00:00+03:00' },
     { title: 'Lunch with Dana', start: '2026-10-08T12:30:00+03:00' }] }));
-  await cli('sender', ['put', 'notes/agenda', '{"topic":"renewal"}']);
+  await cli('sender', ['put', 'notes/agenda', '{"topic":"renewal"}', '--note', 'Agenda added for Thursday']);
   await cli('sender', ['put', 'notes/scrap', '1']);
   await cli('sender', ['rm', 'notes/scrap']);
 
@@ -359,6 +359,9 @@ test('CLI: the demo flow. Share by link, consume, update, and pick up the change
   assert.deepEqual(again.changed_since_last_pull.map((c) => [c.key, c.change]).sort(),
     [['calendar/next-week', 'new or updated'], ['notes/agenda', 'new or updated'], ['notes/scrap', 'deleted']]);
   assert.equal(again.records.find((r) => r.key === 'calendar/next-week').value.events.length, 2);
+  assert.equal(again.changed_since_last_pull.find((c) => c.key === 'notes/agenda').note, 'Agenda added for Thursday');
+  assert.equal(again.records.find((r) => r.key === 'notes/agenda').note, 'Agenda added for Thursday');
+  assert.equal(again.records.find((r) => r.key === 'calendar/next-week').note, undefined, 'a write without a note carries none');
   assert.deepEqual(again.records.map((r) => r.key).sort(), ['calendar/next-week', 'notes/agenda']);
   const onlyNew = JSON.parse(await cli('receiver', ['pull', '--new']));
   assert.deepEqual(onlyNew.records, []);

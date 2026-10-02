@@ -20,6 +20,7 @@ const INSTRUCTIONS = [
 ].join(' ');
 
 const spaceArg = { type: 'string', description: 'Space name from shared_spaces. Optional when only one space is configured.' };
+const noteArg = { type: 'string', description: 'Optional one-line summary of what this write changed. Readers see it next to the record.' };
 const keyArg = { type: 'string', description: 'Record key. A path-like name works well, for example "prospect/acme.com".' };
 
 const TOOLS = [
@@ -66,6 +67,7 @@ const TOOLS = [
         space: spaceArg, key: keyArg,
         value: { description: 'Any JSON value: object, array, string, number or boolean.' },
         if_seq: { type: 'integer', description: 'Optional. Only write if the record is still at this seq (0 means it must not exist yet).' },
+        note: noteArg,
       },
       required: ['key', 'value'],
       additionalProperties: false,
@@ -79,7 +81,7 @@ const TOOLS = [
       'everything else is kept. Creates the record if missing. Safe when several people update the same record.',
     inputSchema: {
       type: 'object',
-      properties: { space: spaceArg, key: keyArg, patch: { type: 'object', description: 'Fields to set, or null to remove.' } },
+      properties: { space: spaceArg, key: keyArg, patch: { type: 'object', description: 'Fields to set, or null to remove.' }, note: noteArg },
       required: ['key', 'patch'],
       additionalProperties: false,
     },
@@ -89,7 +91,7 @@ const TOOLS = [
     name: 'shared_delete',
     title: 'Delete a shared record',
     description: 'Delete a record for everyone in the space. The stored content is overwritten and cannot be recovered.',
-    inputSchema: { type: 'object', properties: { space: spaceArg, key: keyArg }, required: ['key'], additionalProperties: false },
+    inputSchema: { type: 'object', properties: { space: spaceArg, key: keyArg, note: noteArg }, required: ['key'], additionalProperties: false },
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
   },
 ];
@@ -119,14 +121,14 @@ async function callTool(name, args) {
     case 'shared_get': {
       const rec = await space.get(args.key);
       if (!rec) return { space: spaceName, key: args.key, found: false };
-      return { space: spaceName, found: true, key: rec.key, updated_at: rec.updated_at, updated_by: rec.updated_by, seq: rec.seq, value: rec.value, note: NOTE };
+      return { space: spaceName, found: true, key: rec.key, updated_at: rec.updated_at, updated_by: rec.updated_by, ...(rec.note ? { change_note: rec.note } : {}), seq: rec.seq, value: rec.value, note: NOTE };
     }
     case 'shared_put':
-      return { space: spaceName, ...(await space.put(args.key, args.value, { ifSeq: args.if_seq })) };
+      return { space: spaceName, ...(await space.put(args.key, args.value, { ifSeq: args.if_seq, note: args.note })) };
     case 'shared_patch':
-      return { space: spaceName, ...(await space.patch(args.key, args.patch)) };
+      return { space: spaceName, ...(await space.patch(args.key, args.patch, { note: args.note })) };
     case 'shared_delete':
-      return { space: spaceName, deleted: true, ...(await space.delete(args.key)) };
+      return { space: spaceName, deleted: true, ...(await space.delete(args.key, { note: args.note })) };
     default:
       throw Object.assign(new Error(`Unknown tool: ${name}`), { rpcCode: -32602 });
   }

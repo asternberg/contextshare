@@ -31,6 +31,13 @@ function checkKey(key) {
   if (typeof key !== 'string' || key.length === 0 || key.length > 512) throw new Error('key must be a string of 1 to 512 characters');
 }
 
+// A short human-readable line saying what this write changed. Travels encrypted with the record.
+function noteField(note) {
+  if (note === undefined || note === null || note === '') return {};
+  if (typeof note !== 'string' || note.length > 500) throw new Error('note must be a string of at most 500 characters');
+  return { n: note };
+}
+
 const isPlainObject = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
 
 export class Space {
@@ -81,6 +88,7 @@ export class Space {
         // which keep the time of their last real edit (as recorded by whoever rotated).
         updated_at: env.carried ? env.at : rec.updated_at,
         updated_by: env.by ?? null,          // self-declared by the writer
+        ...(typeof env.n === 'string' && env.n ? { note: env.n } : {}),   // the writer's one-line "what changed"
         seq: rec.seq,
         ...(env.carried ? { carried: true } : {}),
       };
@@ -116,7 +124,7 @@ export class Space {
       .filter((r) => !after || new Date(r.updated_at) > after)
       .sort((a, b) => b.seq - a.seq)
       .map((r) => (r.error ? r : {
-        key: r.key, updated_at: r.updated_at, updated_by: r.updated_by, seq: r.seq,
+        key: r.key, updated_at: r.updated_at, updated_by: r.updated_by, ...(r.note ? { note: r.note } : {}), seq: r.seq,
         ...(r.deleted ? { deleted: true } : { bytes: JSON.stringify(r.value).length }),
       }));
   }
@@ -146,25 +154,25 @@ export class Space {
   }
 
   /** Replace a record. Pass `ifSeq` (the seq you last read, or 0 for "must not exist") to refuse lost updates. */
-  async put(key, value, { ifSeq } = {}) {
+  async put(key, value, { ifSeq, note } = {}) {
     if (value === undefined) throw new Error('value is required');
-    return this.#write(key, { v: value }, ifSeq);
+    return this.#write(key, { v: value, ...noteField(note) }, ifSeq);
   }
 
   /** Copy a record in from another space, keeping who last edited it and when. Used by `rotate`. */
   async carry(record) {
-    return this.#write(record.key, { v: record.value, by: record.updated_by, at: record.updated_at, carried: true });
+    return this.#write(record.key, { v: record.value, by: record.updated_by, at: record.updated_at, carried: true, ...noteField(record.note) });
   }
 
   /** Read, merge (RFC 7386) and write back, retrying if someone else wrote in between. */
-  async patch(key, patch, { retries = 5 } = {}) {
+  async patch(key, patch, { retries = 5, note } = {}) {
     // A merge patch that is not an object would replace the whole record. That is what put is for.
     if (!isPlainObject(patch)) throw new Error('patch must be a JSON object of fields to set or remove; use put to replace a record');
     for (let attempt = 0; ; attempt++) {
       const cur = await this.#read(key);
       const base = cur && !cur.deleted ? cur.value : undefined;
       try {
-        return await this.#write(key, { v: mergePatch(base, patch) }, cur ? cur.seq : 0);
+        return await this.#write(key, { v: mergePatch(base, patch), ...noteField(note) }, cur ? cur.seq : 0);
       } catch (err) {
         if (!(err instanceof ConflictError) || attempt >= retries) throw err;
       }
@@ -172,8 +180,8 @@ export class Space {
   }
 
   /** Overwrite the record with an encrypted tombstone. The old ciphertext is gone from the relay. */
-  async delete(key, { ifSeq } = {}) {
-    return this.#write(key, { del: true }, ifSeq);
+  async delete(key, { ifSeq, note } = {}) {
+    return this.#write(key, { del: true, ...noteField(note) }, ifSeq);
   }
 }
 

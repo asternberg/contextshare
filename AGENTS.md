@@ -48,9 +48,13 @@ this guide. Offer it once at the end of your reply.
 
 Write to the same space again. Do not create a new space and do not issue a new link.
 
-    cs put calendar/next-week @/tmp/next-week.json -s dana-meetings     # replace a record
-    cs patch notes/acme '{"next_step":"send pricing"}' -s dana-meetings  # change some fields
-    cs rm notes/old -s dana-meetings                                     # remove a record
+    cs put calendar/next-week @/tmp/next-week.json -s dana-meetings --note "Added Thursday lunch"
+    cs patch notes/acme '{"next_step":"send pricing"}' -s dana-meetings --note "Next step set"
+    cs rm notes/old -s dana-meetings --note "No longer relevant"
+
+`put` replaces a record, `patch` changes some fields, `rm` removes it. Always add `--note` with one
+line saying what changed. The other side sees that note, which is how their agent can tell them
+what is different without comparing versions.
 
 Everyone holding the link sees the new content the next time they look.
 
@@ -71,7 +75,8 @@ Everyone holding the link sees the new content the next time they look.
 ## The person asks what is NEW, or asks a question later
 
 Run `cs pull -s <name>` again before answering. Never answer from an earlier pull: the content
-may have changed. `changed_since_last_pull` tells you what is new, updated or deleted.
+may have changed. `changed_since_last_pull` tells you what is new, updated or deleted, with the
+sender's note on what changed when they left one.
 `cs spaces` lists the spaces saved on this machine if you do not know the name.
 
 ## Suggested shapes
@@ -107,6 +112,6 @@ Notes on a person or company, key `prospect/<domain>` or `notes/<topic>`: a flat
     cs pull [-s <name>] [--new]      everything in the space, plus what changed since last pull
     cs ls [-s <name>] [--since 3d]   keys with last-updated time and author, no values
     cs get <key> [-s <name>]         one record
-    cs put <key> <json|@file|->      create or replace a record
+    cs put <key> <json|@file|->      create or replace a record     (put, patch, rm take --note "what changed")
     cs patch <key> <json|@file|->    merge fields into a record; null removes a field
     cs rm <key>                      delete a record for everyone
