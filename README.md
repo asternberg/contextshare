@@ -29,21 +29,25 @@ Works with any agent that can run shell commands, such as Claude Code.
 
 Your agent replies with a link and a message to send to Dana.
 
-**To receive:**
+**To receive,** paste the link to your agent with your question. Nothing else is needed:
 
-> Read https://github.com/asternberg/contextshare and open this contextshare link: https://…/#ro.…
+> https://…/#ro.…
 > What does Assaf have on Tuesday?
 
 **To update what you shared:**
 
 > Update what I shared with Dana: add the Thursday lunch.
 
-**To pick up changes:**
+**To pick up changes,** paste the same link again:
 
-> Check contextshare. Did Assaf change anything?
+> https://…/#ro.…
+> Did anything change?
 
-The link stays the same throughout. No agent? A read-only link also opens in a web browser and
-shows the content there.
+The link stays the same throughout.
+
+**No agent, or an AI without a shell such as ChatGPT or claude.ai?** Open the link in a web
+browser. The page decrypts it there and shows the content. "Copy for my AI" copies it as text to
+paste into any AI chat. Come back to the same link for the latest version.
 
 ## How it works
 
@@ -77,7 +81,7 @@ shows the content there.
 npx -y github:asternberg/contextshare help
 ```
 
-`new`, `join`, `pull`, `ls`, `get`, `put`, `patch`, `rm`, `link`, `rotate`, `spaces`, `setup`.
+`new`, `open`, `join`, `pull`, `ls`, `get`, `put`, `patch`, `rm`, `link`, `rotate`, `spaces`, `setup`.
 There is also an MCP server for agents that prefer tools: `contextshare mcp`.
 
 ## Run your own relay

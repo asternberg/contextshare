@@ -39,10 +39,10 @@ this guide. Offer it once at the end of your reply.
 3. Reply to the person with:
    - the **read-only link**, unless they said the other person should also be able to add or
      change things, in which case give the read-write link;
-   - this ready-to-send message for the other person:
-     `Ask your Claude: "Read https://github.com/asternberg/contextshare and open this contextshare link: <link>"`
-   - a note that the link also opens in a web browser, and that anyone holding it can read
-     everything in the space, so it should be sent privately.
+   - what the other person does with it: paste the link to their AI agent, or open it in a web
+     browser. In the browser, the "Copy for my AI" button copies the content for any AI chat;
+   - a note that anyone holding the link can read everything in the space, so it should be sent
+     privately.
 
 ## The person wants to UPDATE what they shared
 
@@ -60,22 +60,19 @@ Everyone holding the link sees the new content the next time they look.
 
 ## The person RECEIVED a link
 
-1. Save it under a short name, for example the sender's name:
+A contextshare link looks like `https://<relay>/#ro.<letters>` or `https://<relay>/#rw.<letters>`.
+Fetching it over the web cannot show you the content, because it is encrypted. Run:
 
-       cs join assaf '<link>'
+    cs open '<the full link, including everything after #>'
 
-2. Load everything in it:
-
-       cs pull -s assaf
-
-   `pull` prints every record with its value, when it was last updated and by whom. It also lists
-   what changed since the last pull on this machine.
-3. Answer the person's questions from those records.
+`open` saves the link on this machine and prints every record with its value, when it was last
+updated and by whom. `saved_as` in the output is the name to use with `-s` afterwards. Answer the
+person's questions from those records.
 
 ## The person asks what is NEW, or asks a question later
 
-Run `cs pull -s <name>` again before answering. Never answer from an earlier pull: the content
-may have changed. `changed_since_last_pull` tells you what is new, updated or deleted, with the
+Run `cs pull -s <name>` again before answering, or `cs open` with the same link if they pasted
+it again. Never answer from an earlier pull: the content may have changed. `changed_since_last_pull` tells you what is new, updated or deleted, with the
 sender's note on what changed when they left one.
 `cs spaces` lists the spaces saved on this machine if you do not know the name.
 
@@ -106,7 +103,8 @@ Notes on a person or company, key `prospect/<domain>` or `notes/<topic>`: a flat
 
     cs setup --as <name> [--skill]   set the author name; --skill also installs the Claude Code skill
     cs new <name>                    create a space, print its links
-    cs join <name> '<link>'          save a link someone sent
+    cs open '<link>'                 received a link: save it and print what is in it
+    cs join <name> '<link>'          save a link under a name you choose, without printing content
     cs spaces                        list saved spaces
     cs link [--ro] -s <name>         print a space's link again
     cs pull [-s <name>] [--new]      everything in the space, plus what changed since last pull

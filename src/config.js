@@ -57,7 +57,8 @@ export async function openSpace(name, opts = {}) {
 }
 
 // Per-machine memory of how far each space has been read, so `pull` can say what is new.
-const statePath = () => join(dirname(configPath()), 'state.json');
+// Kept beside the config file and named after it, so two configs never share read positions.
+const statePath = () => configPath().replace(/\.json$/, '') + '.state.json';
 
 export function loadState() {
   try { const st = JSON.parse(readFileSync(statePath(), 'utf8')); return st && typeof st === 'object' ? st : {}; } catch { return {}; }
