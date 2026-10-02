@@ -15,8 +15,11 @@ Below, `cs` stands for `npx -y github:asternberg/contextshare`.
 
     cs setup --as "<the person's first name>"
 
-This records the name written next to their updates and, if Claude Code is present, installs a
-skill so future sessions know these commands without this guide.
+This records the name written next to their updates. It changes nothing else.
+
+Optional, and only if the person agrees: `cs setup --skill` installs a Claude Code skill at
+`~/.claude/skills/contextshare/`, so future sessions know contextshare without being pointed at
+this guide. Offer it once at the end of your reply.
 
 ## The person wants to SHARE something
 
@@ -25,9 +28,13 @@ skill so future sessions know these commands without this guide.
        cs new dana-meetings
 
    It prints a read-only link and a read-write link.
-2. Write the content as one or more records. JSON from a file is safest:
+2. Write the content as one or more records. JSON from a file is safest. Put the file in the
+   system temp directory and name it for what it holds:
 
        cs put calendar/next-week @/tmp/next-week.json -s dana-meetings
+
+   For a document, keep its structure: `{ "title": ..., "sections": ... }` or the text under a
+   `text` field. Run each `cs` command on its own, not chained with other commands.
 
 3. Reply to the person with:
    - the **read-only link**, unless they said the other person should also be able to add or
@@ -92,7 +99,7 @@ Notes on a person or company, key `prospect/<domain>` or `notes/<topic>`: a flat
 
 ## All commands
 
-    cs setup --as <name>             one-time setup on this machine
+    cs setup --as <name> [--skill]   set the author name; --skill also installs the Claude Code skill
     cs new <name>                    create a space, print its links
     cs join <name> '<link>'          save a link someone sent
     cs spaces                        list saved spaces

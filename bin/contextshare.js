@@ -14,7 +14,7 @@ const HELP = `contextshare: an encrypted JSON store shared between people and th
 
 For AI agents
   contextshare guide                   print the step-by-step guide for agents
-  contextshare setup --as <name>       one-time setup: author name, and a Claude Code skill if present
+  contextshare setup --as <name>       set the author name; add --skill to also install a Claude Code skill
 
 Set up
   contextshare new <name> [--relay <url>]   create a space and print its share links
@@ -47,7 +47,7 @@ Environment
   CONTEXTSHARE_CONFIG  config file path (default ~/.config/contextshare/config.json)
 `;
 
-const BOOLEAN = new Set(['json', 'ro', 'all', 'help', 'new', 'no-skill']);
+const BOOLEAN = new Set(['json', 'ro', 'all', 'help', 'new', 'skill']);
 
 function parseArgs(argv) {
   const flags = {}, rest = [];
@@ -112,7 +112,7 @@ async function main() {
       saveConfig(cfg);
       console.log(`Updates from this machine will be written as "${author(cfg)}".`);
       const claudeDir = process.env.CONTEXTSHARE_CLAUDE_DIR || join(homedir(), '.claude');
-      if (!flags['no-skill'] && existsSync(claudeDir)) {
+      if (flags.skill) {
         const dest = join(claudeDir, 'skills', 'contextshare');
         mkdirSync(dest, { recursive: true });
         copyFileSync(join(ROOT, 'skills', 'contextshare', 'SKILL.md'), join(dest, 'SKILL.md'));

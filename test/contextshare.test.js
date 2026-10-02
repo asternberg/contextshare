@@ -365,9 +365,9 @@ test('CLI: the demo flow. Share by link, consume, update, and pick up the change
 
   // The guide prints, and setup records the name without touching the real home directory.
   assert.match(await cli('receiver', ['guide']), /The person RECEIVED a link/);
-  assert.match(await cli('receiver', ['setup', '--as', 'Dana', '--no-skill']), /written as "Dana"/);
-  assert.ok(!existsSync(join(dir, 'claude-home', 'skills')), '--no-skill installs nothing');
-  assert.match(await cli('receiver', ['setup']), /Installed the Claude Code skill/);
+  assert.match(await cli('receiver', ['setup', '--as', 'Dana']), /written as "Dana"/);
+  assert.ok(!existsSync(join(dir, 'claude-home', 'skills')), 'setup alone installs nothing');
+  assert.match(await cli('receiver', ['setup', '--skill']), /Installed the Claude Code skill/);
   assert.match(readFileSync(join(dir, 'claude-home', 'skills', 'contextshare', 'SKILL.md'), 'utf8'), /name: contextshare/);
 });
 
