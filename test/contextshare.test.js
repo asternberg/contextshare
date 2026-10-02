@@ -1,6 +1,6 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -11,6 +11,7 @@ import { startRelay } from '../src/relay-node.js';
 
 const BIN = fileURLToPath(new URL('../bin/contextshare.js', import.meta.url));
 const dir = mkdtempSync(join(tmpdir(), 'contextshare-test-'));
+mkdirSync(join(dir, 'claude-home'));
 // Set CONTEXTSHARE_TEST_RELAY=http://127.0.0.1:8788 to run the same suite against another relay,
 // for example the Cloudflare Worker under `npx wrangler dev`.
 const EXTERNAL = process.env.CONTEXTSHARE_TEST_RELAY || null;
@@ -280,7 +281,7 @@ test('create token: a relay can refuse new spaces from strangers', { skip: EXTER
 // Async on purpose: the relay runs inside this process, so a blocking child call would deadlock it.
 const cli = (who, args, input) => new Promise((resolve, reject) => {
   const child = spawn(process.execPath, [BIN, ...args], {
-    env: { ...process.env, CONTEXTSHARE_CONFIG: join(dir, `${who}.json`), CONTEXTSHARE_AS: who, CONTEXTSHARE_LINK: '', CONTEXTSHARE_RELAY: relay.url },
+    env: { ...process.env, CONTEXTSHARE_CONFIG: join(dir, `${who}.json`), CONTEXTSHARE_AS: who, CONTEXTSHARE_LINK: '', CONTEXTSHARE_RELAY: relay.url, CONTEXTSHARE_CLAUDE_DIR: join(dir, 'claude-home') },
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   let out = '', err = '';
@@ -364,7 +365,10 @@ test('CLI: the demo flow. Share by link, consume, update, and pick up the change
 
   // The guide prints, and setup records the name without touching the real home directory.
   assert.match(await cli('receiver', ['guide']), /The person RECEIVED a link/);
-  assert.match(await cli('receiver', ['setup', '--as', 'Dana', '--no-skill']), /written as "receiver"|written as "Dana"/);
+  assert.match(await cli('receiver', ['setup', '--as', 'Dana', '--no-skill']), /written as "Dana"/);
+  assert.ok(!existsSync(join(dir, 'claude-home', 'skills')), '--no-skill installs nothing');
+  assert.match(await cli('receiver', ['setup']), /Installed the Claude Code skill/);
+  assert.match(readFileSync(join(dir, 'claude-home', 'skills', 'contextshare', 'SKILL.md'), 'utf8'), /name: contextshare/);
 });
 
 test('CLI: a broken config file never echoes link material; flags need values', async () => {

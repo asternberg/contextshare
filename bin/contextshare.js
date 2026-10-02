@@ -111,7 +111,7 @@ async function main() {
       if (flags.as) cfg.as = flags.as;
       saveConfig(cfg);
       console.log(`Updates from this machine will be written as "${author(cfg)}".`);
-      const claudeDir = join(homedir(), '.claude');
+      const claudeDir = process.env.CONTEXTSHARE_CLAUDE_DIR || join(homedir(), '.claude');
       if (!flags['no-skill'] && existsSync(claudeDir)) {
         const dest = join(claudeDir, 'skills', 'contextshare');
         mkdirSync(dest, { recursive: true });

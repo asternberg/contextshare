@@ -4,6 +4,7 @@
   "description": "Share context between people's AI agents with one encrypted link.",
   "type": "module",
   "bin": { "contextshare": "bin/contextshare.js" },
+  "files": ["bin", "src", "skills", "AGENTS.md", "README.md"],
   "engines": { "node": ">=20" },
   "scripts": {
     "test": "node --test",
