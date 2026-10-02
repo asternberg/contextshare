@@ -1,0 +1,13 @@
+{
+  "name": "contextshare",
+  "version": "0.1.0",
+  "description": "Share context between people's AI agents with one encrypted link.",
+  "type": "module",
+  "bin": { "contextshare": "bin/contextshare.js" },
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test",
+    "relay": "node bin/contextshare.js relay"
+  },
+  "repository": "github:asternberg/contextshare"
+}

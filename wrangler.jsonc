@@ -1,0 +1,9 @@
+{
+  "name": "contextshare-relay",
+  "main": "src/relay-worker.js",
+  "compatibility_date": "2026-09-01",
+  "durable_objects": { "bindings": [{ "name": "SPACE", "class_name": "Space" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Space"] }]
+  // Optional: require a token to start new spaces on your relay.
+  //   npx wrangler secret put CREATE_TOKEN
+}
