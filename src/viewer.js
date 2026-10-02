@@ -148,6 +148,7 @@ if (typeof document !== 'undefined') {
       v.forEach((o) => { const tr = el('tr'); cols.forEach((c) => { const td = el('td'); if (o[c] !== undefined) td.append(render(o[c])); tr.append(td); }); table.append(tr); });
       wrap.append(table); return wrap;
     }
+    if (Array.isArray(v) && !v.length) return el('span', 'none', 'muted');
     if (Array.isArray(v)) { const ul = el('ul'); v.forEach((x) => { const li = el('li'); li.append(render(x)); ul.append(li); }); return ul; }
     if (isObj(v)) { const dl = el('dl'); Object.entries(v).forEach(([k, x]) => { const dd = el('dd'); dd.append(render(x)); dl.append(el('dt', k), dd); }); return dl; }
     return el('span', when(v) || String(v));
